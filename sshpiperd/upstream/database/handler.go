@@ -26,7 +26,7 @@ func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.Additi
 		upuser = d.Username
 	}
 
-	logger.Printf("mapping user [%v] to [%v@%v]", user, upuser, addr)
+	logger.Printf("mapping downstream user [%v] to upstream [%v@%v]", user, upuser, addr)
 
 	c, err := upstreamprovider.DialForSSH(addr)
 
@@ -35,6 +35,8 @@ func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.Additi
 	}
 
 	hostKeyCallback := ssh.InsecureIgnoreHostKey()
+	logger.Printf("debug [d.Upstream.Server.IgnoreHostKey=%v]", d.Upstream.Server.IgnoreHostKey)
+	logger.Printf("debug [d]", d)
 
 	if !d.Upstream.Server.IgnoreHostKey {
 
