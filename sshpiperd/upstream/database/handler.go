@@ -37,6 +37,7 @@ func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.Additi
 	hostKeyCallback := ssh.InsecureIgnoreHostKey()
 	logger.Printf("debug [d.Upstream.Server.IgnoreHostKey=%v]", d.Upstream.Server.IgnoreHostKey)
 	logger.Printf("debug [d.AuthorizedKeys=%v]", d.AuthorizedKeys)
+	logger.Printf("debug [ssh.AuthPipeType=%v, ssh.AuthMethod=%v]", ssh.AuthPipeType, ssh.AuthMethod)
 
 	if !d.Upstream.Server.IgnoreHostKey {
 
