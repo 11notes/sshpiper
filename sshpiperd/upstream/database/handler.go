@@ -27,6 +27,8 @@ func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.Additi
 	}
 
 	logger.Printf("mapping downstream user [%v] to upstream [%v@%v]", user, upuser, addr)
+	logger.Printf(ssh.AuthPipeType)
+	logger.Printf(ssh.AuthMethod)
 
 	c, err := upstreamprovider.DialForSSH(addr)
 
@@ -35,9 +37,6 @@ func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.Additi
 	}
 
 	hostKeyCallback := ssh.InsecureIgnoreHostKey()
-	logger.Printf("debug [d.Upstream.Server.IgnoreHostKey=%v]", d.Upstream.Server.IgnoreHostKey)
-	logger.Printf("debug [d.AuthorizedKeys=%v]", d.AuthorizedKeys)
-	logger.Printf("debug [ssh.AuthPipeType=%v, ssh.AuthMethod=%v]", ssh.AuthPipeType, ssh.AuthMethod)
 
 	if !d.Upstream.Server.IgnoreHostKey {
 
@@ -53,6 +52,12 @@ func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.Additi
 		User: upuser,
 
 		PublicKeyCallback: func(conn ssh.ConnMetadata, key ssh.PublicKey) (ssh.AuthPipeType, ssh.AuthMethod, error) {
+
+			logger.Printf("start private key signing ...")
+			logger.Printf("ssh.AuthPipeType")
+			logger.Printf(ssh.AuthPipeType)
+			logger.Printf("ssh.AuthMethod")
+			logger.Printf(ssh.AuthMethod)
 
 			expectKey := key.Marshal()
 			for _, k := range d.AuthorizedKeys {
