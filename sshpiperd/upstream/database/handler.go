@@ -78,7 +78,7 @@ func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.Additi
 	}
 
 	return c, &ssh.AuthPipe{
-		User: pipe.Username,
+		User: upuser,
 
 		NoneAuthCallback: func(conn ssh.ConnMetadata) (ssh.AuthPipeType, ssh.AuthMethod, error) {
 			return callback()
