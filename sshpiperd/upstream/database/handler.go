@@ -28,7 +28,7 @@ func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.Additi
 		upuser = d.Username
 	}
 
-	logger.Printf("mapping downstream [%v@%v::%v] to upstream [%v@%v]", user, localaddr, remoteaddr, upuser, addr)
+	logger.Printf("mapping downstream [%v@%v from %v] to upstream [%v@%v]", user, localaddr, remoteaddr, upuser, addr)
 
 	c, err := upstreamprovider.DialForSSH(addr)
 
