@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/jinzhu/gorm"
 	"net"
+	"fmt"
 
 	"golang.org/x/crypto/ssh"
 
@@ -51,9 +52,26 @@ func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.Additi
 	pipe := ssh.AuthPipe{
 		User: upuser,
 
+		NoneAuthCallback: func(conn ssh.ConnMetadata) (ssh.AuthPipeType, ssh.AuthMethod, error) {
+
+			logger.Printf("start none auth ...")
+			logger.Printf("%+v\n", ssh.ConnMetadata)
+
+			return ssh.AuthPipeTypeNone, nil, fmt.Errorf("unsupport auth type %v", pipe.Auth)
+		},
+
+		PasswordCallback: func(conn ssh.ConnMetadata, password []byte) (ssh.AuthPipeType, ssh.AuthMethod, error) {
+
+			logger.Printf("start password auth ...")
+			logger.Printf("%+v\n", ssh.ConnMetadata)
+
+			return ssh.AuthPipeTypeMap, ssh.Password(pipe.UpPassword), nil
+		},
+
 		PublicKeyCallback: func(conn ssh.ConnMetadata, key ssh.PublicKey) (ssh.AuthPipeType, ssh.AuthMethod, error) {
 
 			logger.Printf("start private key signing ...")
+			logger.Printf("%+v\n", ssh.ConnMetadata)
 
 			expectKey := key.Marshal()
 			for _, k := range d.AuthorizedKeys {
