@@ -12,6 +12,8 @@ import (
 
 func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.AdditionalChallengeContext) (net.Conn, *ssh.AuthPipe, error) {
 
+	pipe, ok := challengeContext.Meta().(pipe)
+
 	user := conn.User()
 	d, err := lookupDownstreamWithFallback(p.db, user)
 
@@ -45,6 +47,31 @@ func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.Additi
 
 		hostKeyCallback = ssh.FixedHostKey(key)
 	}
+
+	callback := func() (ssh.AuthPipeType, ssh.AuthMethod, error) {
+		logger.Printf("[pipe.Auth=%v]", pipe.Auth)
+		logger.Printf("[pipe.PrivateKey=%v]", pipe.PrivateKey)
+		switch pipe.Auth {
+		case "key":
+				kinterf, err := ssh.ParseRawPrivateKey([]byte(pipe.PrivateKey))
+				if err != nil {
+					break
+				}
+
+				signer, err := ssh.NewSignerFromKey(kinterf)
+				if err != nil || signer == nil {
+					break
+				}
+
+				return ssh.AuthPipeTypeMap, ssh.PublicKeys(signer), nil
+		case "pass":
+			return ssh.AuthPipeTypeMap, ssh.Password(pipe.UpPassword), nil
+		}
+
+		return ssh.AuthPipeTypeNone, nil, fmt.Errorf("unsupport auth type %v", pipe.Auth)
+	}
+
+	
 
 	pipe := ssh.AuthPipe{
 		User: upuser,
