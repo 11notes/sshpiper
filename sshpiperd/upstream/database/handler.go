@@ -55,17 +55,15 @@ func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.Additi
 		NoneAuthCallback: func(conn ssh.ConnMetadata) (ssh.AuthPipeType, ssh.AuthMethod, error) {
 
 			logger.Printf("start none auth ...")
-			logger.Printf("%+v\n", ssh.ConnMetadata)
 
-			return ssh.AuthPipeTypeNone, nil, fmt.Errorf("unsupport auth type %v", pipe.Auth)
+			return ssh.AuthPipeTypeNone, nil, nil
 		},
 
 		PasswordCallback: func(conn ssh.ConnMetadata, password []byte) (ssh.AuthPipeType, ssh.AuthMethod, error) {
 
 			logger.Printf("start password auth ...")
-			logger.Printf("%+v\n", ssh.ConnMetadata)
 
-			return ssh.AuthPipeTypeMap, ssh.Password(pipe.UpPassword), nil
+			return ssh.AuthPipeTypeNone, nil, nil
 		},
 
 		PublicKeyCallback: func(conn ssh.ConnMetadata, key ssh.PublicKey) (ssh.AuthPipeType, ssh.AuthMethod, error) {
