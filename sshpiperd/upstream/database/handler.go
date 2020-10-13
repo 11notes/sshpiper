@@ -52,10 +52,6 @@ func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.Additi
 		PublicKeyCallback: func(conn ssh.ConnMetadata, key ssh.PublicKey) (ssh.AuthPipeType, ssh.AuthMethod, error) {
 
 			logger.Printf("start private key signing ...")
-			logger.Printf("ssh.AuthPipeType")
-			logger.Printf(ssh.AuthPipeType)
-			logger.Printf("ssh.AuthMethod")
-			logger.Printf(ssh.AuthMethod)
 
 			expectKey := key.Marshal()
 			for _, k := range d.AuthorizedKeys {
