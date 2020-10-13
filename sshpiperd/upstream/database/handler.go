@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"github.com/jinzhu/gorm"
 	"net"
-	"fmt"
 
 	"golang.org/x/crypto/ssh"
 
@@ -69,7 +68,6 @@ func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.Additi
 		PublicKeyCallback: func(conn ssh.ConnMetadata, key ssh.PublicKey) (ssh.AuthPipeType, ssh.AuthMethod, error) {
 
 			logger.Printf("start private key signing ...")
-			logger.Printf("%+v\n", ssh.ConnMetadata)
 
 			expectKey := key.Marshal()
 			for _, k := range d.AuthorizedKeys {
