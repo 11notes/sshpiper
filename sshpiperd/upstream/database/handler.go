@@ -13,6 +13,8 @@ import (
 func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.AdditionalChallengeContext) (net.Conn, *ssh.AuthPipe, error) {
 
 	user := conn.User()
+	remoteaddr := conn.RemoteAddr()
+	localaddr := conn.LocalAddr()
 	d, err := lookupDownstreamWithFallback(p.db, user)
 
 	if err != nil {
@@ -26,7 +28,7 @@ func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.Additi
 		upuser = d.Username
 	}
 
-	logger.Printf("mapping downstream user [%v] to upstream [%v@%v]", user, upuser, addr)
+	logger.Printf("mapping downstream [%v@%v::%v] to upstream [%v@%v]", user, localaddr, remoteaddr, upuser, addr)
 
 	c, err := upstreamprovider.DialForSSH(addr)
 
@@ -83,8 +85,9 @@ func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.Additi
 
 		UpstreamHostKeyCallback: hostKeyCallback,
 	}
-	logger.Printf("pipe")
-	logger.Printf(pipe)
+
+	logger.Printf("%+v\n", pipe)
+
 	return c, &pipe, nil
 }
 
