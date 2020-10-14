@@ -56,7 +56,6 @@ type upstream struct {
 
 	Username     string `gorm:"type:varchar(45)"`
 	Password     string `gorm:"type:varchar(60)"`
-	PrivateKeyID int
 	PrivateKey   privateKey
 	AuthMapType  authMapType
 }
