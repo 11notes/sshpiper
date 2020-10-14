@@ -51,23 +51,9 @@ func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.Additi
 	pipe := ssh.AuthPipe{
 		User: upuser,
 
-		NoneAuthCallback: func(conn ssh.ConnMetadata, key ssh.PublicKey) (ssh.AuthPipeType, ssh.AuthMethod, error) {
-
-			logger.Printf("start none auth ...")
-
-			return ssh.AuthPipeTypeNone, nil, nil
-		},
-
-		PasswordCallback: func(conn ssh.ConnMetadata, password []byte) (ssh.AuthPipeType, ssh.AuthMethod, error) {
-
-			logger.Printf("start password auth ...")
-
-			return ssh.AuthPipeTypeNone, nil, nil
-		},
-
 		PublicKeyCallback: func(conn ssh.ConnMetadata, key ssh.PublicKey) (ssh.AuthPipeType, ssh.AuthMethod, error) {
 
-			logger.Printf("start private key signing ...")
+			logger.Printf("authentication method: publickey")
 
 			expectKey := key.Marshal()
 			for _, k := range d.AuthorizedKeys {
@@ -99,8 +85,6 @@ func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.Additi
 
 		UpstreamHostKeyCallback: hostKeyCallback,
 	}
-
-	logger.Printf("%+v\n", pipe)
 
 	return c, &pipe, nil
 }
