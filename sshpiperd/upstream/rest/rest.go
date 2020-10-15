@@ -1,21 +1,22 @@
-package database
+package rest
 
 import (
-	"bytes"
-	"github.com/jinzhu/gorm"
-	"net"
-
-	"golang.org/x/crypto/ssh"
-
-	upstreamprovider "github.com/tg123/sshpiper/sshpiperd/upstream"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 )
+
+type restUpstream struct {
+	User string `json:"User"`
+}
 
 func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.AdditionalChallengeContext) (net.Conn, *ssh.AuthPipe, error) {
 
 	user := conn.User()
 	remoteaddr := conn.RemoteAddr()
 	localaddr := conn.LocalAddr()
-	d, err := lookupDownstreamWithFallback(p.db, user)
+	d, err := getUpstream(user)
 
 	if err != nil {
 		return nil, nil, err
@@ -87,36 +88,32 @@ func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.Additi
 	return c, &pipe, nil
 }
 
-func lookupDownstreamWithFallback(db *gorm.DB, user string) (*downstream, error) {
-	d, err := lookupDownstream(db, user)
+func (p *rest) getUpstream(User string) (*pipe, error) {
+	jsonStr, err := json.Marshal(restUpstream{User:User})
+    req, err := http.NewRequest("POST", p.Config.URL, bytes.NewBuffer(jsonStr))
+    req.Header.Set("Content-Type", "application/json")
 
-	if gorm.IsRecordNotFoundError(err) {
-		fallback, _ := lookupConfigValue(db, fallbackUserEntry)
-
-		if len(fallback) > 0 {
-			return lookupDownstream(db, fallback)
-		}
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        panic(err)
+    }
+	defer resp.Body.Close()
+	
+	if resp.StatusCode > 299 {
+		return nil, fmt.Errorf("bad http state code %v", resp.StatusCode)
 	}
 
-	return d, err
-}
-
-func lookupDownstream(db *gorm.DB, user string) (*downstream, error) {
-	d := downstream{}
-
-	if err := db.Set("gorm:auto_preload", true).Where(&downstream{Username: user}).First(&d).Error; err != nil {
-
+    body, _ := ioutil.ReadAll(resp.Body)
+    if err != nil {
 		return nil, err
 	}
 
-	return &d, nil
-}
+	pipe := pipe{}
 
-func lookupConfigValue(db *gorm.DB, entry string) (string, error) {
-	c := config{}
-	if err := db.Where(&config{Entry: entry}).First(&c).Error; err != nil {
-		return "", err
+	if err := json.Unmarshal(body, &pipe); err != nil {
+		return nil, err
 	}
 
-	return c.Value, nil
+	return &pipe, nil
 }
