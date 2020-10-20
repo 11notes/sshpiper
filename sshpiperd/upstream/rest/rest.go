@@ -7,7 +7,8 @@ import (
 	"net/http"
 )
 
-type restUpstream struct {
+type restPipe struct {
+	Direction string `json:"Direction"`
 	User string `json:"User"`
 }
 
@@ -88,8 +89,8 @@ func (p *plugin) findUpstream(conn ssh.ConnMetadata, challengeContext ssh.Additi
 	return c, &pipe, nil
 }
 
-func (p *rest) getUpstream(User string) (*pipe, error) {
-	jsonStr, err := json.Marshal(restUpstream{User:User})
+func (p *rest) getDownstream(User string) (*pipe, error) {
+	jsonStr, err := json.Marshal(restPipe{Direction:"Downstream", User:User})
     req, err := http.NewRequest("POST", p.Config.URL, bytes.NewBuffer(jsonStr))
     req.Header.Set("Content-Type", "application/json")
 
@@ -100,7 +101,37 @@ func (p *rest) getUpstream(User string) (*pipe, error) {
     }
 	defer resp.Body.Close()
 	
-	if resp.StatusCode > 299 {
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("bad http state code %v", resp.StatusCode)
+	}
+
+    body, _ := ioutil.ReadAll(resp.Body)
+    if err != nil {
+		return nil, err
+	}
+
+	pipe := pipe{}
+
+	if err := json.Unmarshal(body, &pipe); err != nil {
+		return nil, err
+	}
+
+	return &pipe, nil
+}
+
+func (p *rest) getUpstream(User string) (*pipe, error) {
+	jsonStr, err := json.Marshal(restPipe{Direction:"Upstream", User:User})
+    req, err := http.NewRequest("POST", p.Config.URL, bytes.NewBuffer(jsonStr))
+    req.Header.Set("Content-Type", "application/json")
+
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        panic(err)
+    }
+	defer resp.Body.Close()
+	
+	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("bad http state code %v", resp.StatusCode)
 	}
 
